@@ -24,6 +24,12 @@ const persons = [
   }
 ];
 
+app.get('/info', (req, res) => {
+  const date = new Date();
+  const message = `<p>Phonebook has info for ${persons.length} people<p><p>${date}<p>`;
+  res.send(message)
+})
+
 app.get('/api/persons',(req, res) => {
   res.send(persons);
 });
