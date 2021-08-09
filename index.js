@@ -41,8 +41,23 @@ app.get('/api/persons/:id', (req, res) => {
   if (person) {
     res.send(person)
   } else {
-    res.status(404).send('Not found.');
+    res.status(404).end();
   }
+});
+
+app.delete('/api/persons/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const index = persons.findIndex((person => person.id === id));
+  let status;
+
+  if (index > 0) {
+    persons.splice(index, 1);
+    status = 204;
+  } else {
+    status = 404;
+  }
+
+  res.status(status).end();
 });
 
 const PORT = 3001
