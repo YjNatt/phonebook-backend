@@ -41,14 +41,30 @@ const generateId= () => {
 }
 
 app.post('/api/persons', (req, res) => {
-  const person = {
-    name: req.body.name,
-    number: req.body.number,
-    id: generateId(),
-  };
+  const name = req.body.name && req.body.name.trim();
+  const number = req.body.number && req.body.number.trim();
 
-  persons.push(person);
-  res.send(person);
+  let error;
+  if (!name) {
+    error = 'name is missing';
+  } else if (!number) {
+    error = 'number is missing';
+  } else if (persons.some(person => person.name === name)) {
+    error = 'name must be unique';
+  }
+
+  if (!error) {
+    const person = {
+      id: generateId(),
+      name,
+      number: req.body.number,
+    };
+
+    persons.push(person);
+    res.send(person);
+  } else {
+    res.status(404).json({ error });
+  }
 });
 
 app.get('/api/persons/:id', (req, res) => {
