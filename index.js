@@ -65,10 +65,6 @@ app.get('/api/persons', (req, res) => {
   });
 });
 
-const generateId= () => {
-  return Math.floor(Math.random() * 100);
-}
-
 app.post('/api/persons', (req, res) => {
   const body = req.body
   if (!body.name || !body.number) {
@@ -97,18 +93,14 @@ app.get('/api/persons/:id', (req, res) => {
 });
 
 app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const index = persons.findIndex((person => person.id === id));
-  let status;
-
-  if (index > 0) {
-    persons.splice(index, 1);
-    status = 204;
-  } else {
-    status = 404;
-  }
-
-  res.status(status).end();
+  Person.findByIdAndDelete(req.params.id)
+        .then(() => {
+          res.status(204).end();
+        })
+        .catch(error => {
+          console.log(error);
+          res.status(400).end();
+        });
 });
 
 const PORT = process.env.PORT || 3001
