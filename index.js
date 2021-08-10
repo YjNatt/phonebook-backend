@@ -7,10 +7,10 @@ const Person = require('./models/person');
 app.use(express.static('build'));
 app.use(express.json());
 
-morgan.token('persons', (req, res) => {
+morgan.token('persons', (req) => {
   const name = req.body.name;
   const number = req.body.number;
-  return JSON.stringify({ name, number});
+  return JSON.stringify({ name, number });
 });
 
 app.use(morgan((tokens, req, res) => {
@@ -22,7 +22,7 @@ app.use(morgan((tokens, req, res) => {
     tokens['response-time'](req, res), 'ms'
   ];
 
-  if (req.method === "POST") {
+  if (req.method === 'POST') {
     format.push(tokens.persons(req, res))
   }
 
@@ -98,9 +98,9 @@ app.delete('/api/persons/:id', (req, res, next) => {
 const errorHandler = (error, req, res, next) =>{
   console.log(error);
 
-  if (error.name === "CastError") {
+  if (error.name === 'CastError') {
     return res.status(400).send({ error: 'malformatted id' });
-  } else if (error.name === "ValidationError") {
+  } else if (error.name === 'ValidationError') {
     let message;
 
     if (error.errors.name) {
