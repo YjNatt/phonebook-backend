@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
+const Person = require('./models/person');
 
 app.use(express.static('build'));
 app.use(express.json());
@@ -57,7 +59,10 @@ app.get('/info', (req, res) => {
 })
 
 app.get('/api/persons', (req, res) => {
-  res.send(persons);
+  console.log(Person);
+  Person.find({}).then(notes => {
+    res.json(notes);
+  });
 });
 
 const generateId= () => {
@@ -65,30 +70,19 @@ const generateId= () => {
 }
 
 app.post('/api/persons', (req, res) => {
-  const name = req.body.name && req.body.name.trim();
-  const number = req.body.number && req.body.number.trim();
-
-  let error;
-  if (!name) {
-    error = 'name is missing';
-  } else if (!number) {
-    error = 'number is missing';
-  } else if (persons.some(person => person.name === name)) {
-    error = 'name must be unique';
+  const body = req.body
+  if (!body.name || !body.number) {
+    return res.status(400).json({ error: 'empty fields' });
   }
 
-  if (!error) {
-    const person = {
-      id: generateId(),
-      name,
-      number: req.body.number,
-    };
+  const person = new Person({
+    name: body.name.trim(),
+    number: body.number.trim(),
+  });
 
-    persons.push(person);
-    res.send(person);
-  } else {
-    res.status(404).json({ error });
-  }
+  person.save().then(newPerson => {
+    res.json(newPerson)
+  });
 });
 
 app.get('/api/persons/:id', (req, res) => {
