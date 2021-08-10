@@ -58,14 +58,16 @@ app.get('/info', (req, res) => {
   res.send(message)
 })
 
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
   console.log(Person);
-  Person.find({}).then(notes => {
-    res.json(notes);
-  });
+  Person.find({})
+        .then(notes => {
+          res.json(notes);
+        })
+        .catch(error => next(error));
 });
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
   if (!body.name || !body.number) {
     return res.status(400).json({ error: 'empty fields' });
@@ -76,9 +78,11 @@ app.post('/api/persons', (req, res) => {
     number: body.number.trim(),
   });
 
-  person.save().then(newPerson => {
-    res.json(newPerson)
-  });
+  person.save()
+        .then(newPerson => {
+          res.json(newPerson)
+        })
+        .catch(error => next(error));
 });
 
 app.get('/api/persons/:id', (req, res) => {
@@ -92,16 +96,25 @@ app.get('/api/persons/:id', (req, res) => {
   }
 });
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndDelete(req.params.id)
         .then(() => {
           res.status(204).end();
         })
-        .catch(error => {
-          console.log(error);
-          res.status(400).end();
-        });
+        .catch(error => next(error));
 });
+
+const errorHandler = (error, req, res, next) =>{
+  console.log(error);
+
+  if (error.name === "CastError") {
+    return res.status(400).send({ error: 'malformatted id' });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
